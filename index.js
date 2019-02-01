@@ -35,6 +35,11 @@ function initializeGrid() {
     }
 }
 
+
+function player2Setup(){
+    return ''
+}
+
 /**
  * @description alternate player by switching 'turn' value.
  * 
@@ -42,6 +47,7 @@ function initializeGrid() {
 function changePlayer() {
     let displayText = document.getElementById("changePlayerText")
     let player = turn == 'X' ? player1 : player2 + "( Computer )"
+    let nextPlayer = turn == 'O' ? player1 : player2 + "( Computer )"
     // check if the game is won by someone. set 'game over' to true. 
     if (checkWinner(turn)) {
         let msg = player + " won !!"
@@ -51,11 +57,11 @@ function changePlayer() {
     }
     else if (turn === 'X') {
         turn = 'O';
-        displayText.innerHTML = "<h4 class='displayText'> Its " + player + "'s Turn.</h4>"
+        displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
         return;
     } else {
         turn = 'X';
-        displayText.innerHTML = "<h4 class='displayText'> Its " + player + "'s Turn.</h4>"
+        displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
     }
 
 }
@@ -65,7 +71,7 @@ function filterEmptyCells(beforeFilter) {
     return Object.keys(beforeFilter).filter(key => indexes[key] === 3)
 }
 
-function skipaStep() {
+function skipaStep(str) {
     // check for empty cells.
     // pick random number
     // assign 'O' value
@@ -82,12 +88,13 @@ function skipaStep() {
     for (let index = 0; index < emptyCells.length; index++) {
         res = Object.keys(indexes).filter(key => indexes[key] !== index)
     }
-    console.log("res",res)
+
     let index = res[Math.floor(Math.random() * res.length)]
     let i = index.split("_")[0]
     let j = index.split("_")[1]
-    grid[i][j] = turn
-    console.log(grid)
+
+    //re-rendreing the table with new value.
+    grid[i][j] = 2;
 }
 /**
  * @description - lists styled div elements (and also, content if any during subsiquent render)   
@@ -149,7 +156,7 @@ function onBoxClick() {
     var colIdx = this.getAttribute("colIdx");
     let newValue = turn == 'O' ? 2 : 1;
     grid[colIdx][rowIdx] = newValue;
-    handleSeriesofEvents(rowIdx, colIdx);    // handle series of events once action is dispatched.
+    handleSeriesofEvents();    // handle series of events once action is dispatched.
 }
 
 /**
@@ -158,7 +165,7 @@ function onBoxClick() {
  * @param {int} colIdx - columnd index of click cell.
  * @returns - conditional 
  */
-function handleSeriesofEvents(rowIdx, colIdx) {
+function handleSeriesofEvents() {
     // check if the game is tied. set 'game over' to true. 
     if (checkTie()) {
         let msg = "It's a tie."
@@ -167,7 +174,7 @@ function handleSeriesofEvents(rowIdx, colIdx) {
         declareResult(msg)
     }
     else if(turn == "O"){
-        // skipaStep();
+        skipaStep();
         renderMainGrid();
         addClickHandlers();
     }
@@ -176,7 +183,7 @@ function handleSeriesofEvents(rowIdx, colIdx) {
         addClickHandlers();
     }
     // change the player 
-    changePlayer(rowIdx, colIdx);
+    changePlayer();
 }
 
 /**
