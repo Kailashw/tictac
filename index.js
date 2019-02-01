@@ -19,6 +19,17 @@ function initializeGrid() {
 }
 
 /**
+ * @description : change turn alternatively on every move.
+ */
+function changePlayer() {
+    if (turn === 'X') {
+        turn = 'O';
+        return;
+    }
+        turn = 'X';
+}
+
+/**
  * @description - lists styled div elements (and also, content if any during subsiquent render)   
  * @param {int} colIdx - column id
  * @returns - HTML div tags to be rendered.
@@ -75,20 +86,24 @@ function renderMainGrid() {
 function onBoxClick() {
     var rowIdx = this.getAttribute("rowIdx");
     var colIdx = this.getAttribute("colIdx");
-    let newValue = 1;                   // this value is determining the 'X'/'O' value.
+    let newValue = turn == 'O' ? 2 : 1;      
     grid[colIdx][rowIdx] = newValue;
     renderMainGrid();
     addClickHandlers();
+    changePlayer(); 
 }
 
 
 /**
- * @description add click handler to cells. 
+ * @description add click handler to cell if unmarked, spare otherwise. 
  */
 function addClickHandlers() {
     var boxes = document.getElementsByClassName("box");
+    // add click handlers to only unselected boxes.
     for (var idx = 0; idx < boxes.length; idx++) {
-        boxes[idx].addEventListener('click', onBoxClick, false);
+        if (!boxes[idx].innerText){
+            boxes[idx].addEventListener('click', onBoxClick, false);
+        }
     }
 }
 
