@@ -88,11 +88,23 @@ function onBoxClick() {
     var colIdx = this.getAttribute("colIdx");
     let newValue = turn == 'O' ? 2 : 1;      
     grid[colIdx][rowIdx] = newValue;
+    if(checkTie()){
+        let msg = "it's a tie."
+        declareResult(msg)
+    }
     renderMainGrid();
     addClickHandlers();
     changePlayer(); 
 }
 
+
+/**
+ * @param {string} msg - message to be displayed after the "gameover". 
+ */
+function declareResult(msg) {
+    let gameOverMsg = document.getElementById("resultModal")
+    gameOverMsg.innerHTML = "<h1 class='displayText'>"+msg+"</h1>"
+}
 
 /**
  * @description add click handler to cell if unmarked, spare otherwise. 
@@ -108,6 +120,22 @@ function addClickHandlers() {
 }
 
 /**
+ * @description - check tie condition by looking for values in each cells.
+ */
+function checkTie() {
+    // need to check if all the cells are > 0
+    let count = 0
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            if (grid[i][j] == 0) {
+                count += 1
+            }
+        }
+    }
+    return count > 0 ? false : true
+}
+
+/**
  * @description - re-renders the board empty when called.
  * call 'initializeGrid' - method to render 2d array.
  * followed by 'renderMainGrid' - method to render the content filled and styled matrix in HTML.
@@ -115,6 +143,7 @@ function addClickHandlers() {
  */
 function renderBoard() {
     grid = []
+    document.getElementById("resultModal").innerHTML = '';
     initializeGrid();
     renderMainGrid();
     addClickHandlers();
