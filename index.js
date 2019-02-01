@@ -40,9 +40,7 @@ function initializeGrid() {
  * 
  */
 function changePlayer() {
-    let displayText = document.getElementById("changePlayerText")
     let player = turn == 'X' ? player1 : player2 + "( Computer )"
-    let nextPlayer = turn == 'O' ? player1 : player2 + "( Computer )"
 
     // check if the game is tied. set 'game over' to true. 
     if (checkTie()) {
@@ -58,28 +56,15 @@ function changePlayer() {
         renderMainGrid();
         declareResult(msg)
     }
-    // else if (turn === 'X') {
-    //     turn = 'O';
-    //     displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
-    //     return;
-    // } else {
-    //     turn = 'X';
-    //     displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
-    // }
     else if (turn === 'X') {
         turn = 'O'
         skipaStep()
         renderMainGrid();
         addClickHandlers();
         changePlayer();
-        displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
         return
     }
-    else {
-        turn = 'X';
-        displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
-    }
-
+    turn = 'X';
 }
 
 
@@ -92,6 +77,8 @@ function skipaStep() {
     // pick random number
     // assign 'O' value
     // re-render the table.
+    // turn to 'X' 
+    // repeat.
     let emptyCells = []
     for (let index = 1; index <= 9; index++) {
         if (!getCellValue(index)) {
@@ -168,7 +155,7 @@ function renderMainGrid() {
 function onBoxClick() {
     var rowIdx = this.getAttribute("rowIdx");
     var colIdx = this.getAttribute("colIdx");
-    let newValue = turn == 'O' ? 2 : 1;
+    let newValue = turn === 'O' ? 2 : 1;
     grid[colIdx][rowIdx] = newValue;
     renderMainGrid();
     addClickHandlers();
