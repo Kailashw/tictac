@@ -1,18 +1,10 @@
-<title> TicTac by Kailas Walldoddi </title>
-
-<div>
-    <div class="header">
-        <h1> Tic Tac </h1>
-    </div>
-    <div class="header">
-        <h4> Submitted By : Kailas Walldoddi</h4>
-    </div>
+<title> Tictac by Kailas Walldoddi </title>
+<div class="header">
+    <h1> TIC TAC Game</h1>
 </div>
 
 <!-- Div id for displaying results.-->
 <div id="resultModal"> </div>
-
-<!-- This is where actual Borad Renders. -->
 <div class="parentTop">
     <div class="gridTop">
         <div id="grid">
@@ -21,10 +13,17 @@
     </div>
 </div>
 
+<div class='div'>
+    <button class='button' onclick="renderBoard()"> <i class="fa fa-refresh" style="font-size:24px;"></i> Reset
+    </button>
+    <h6 class="footer"> By : Kailas Walldoddi </h6>
+</div>
 
-<!-- Action Items can be placed here. -->
-<button class="button" onclick="renderBoard()"> Click to Reset </button>
+<!-- Div id for showing player turns. -->
+<div id='changePlayerText'> 
+</div>
 
-<!-- Loading all necessary files to serve this HTML. -->
 <script type="text/javascript" src="./index.js"></script>
 <link rel="stylesheet" href="./index.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
