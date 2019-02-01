@@ -35,11 +35,6 @@ function initializeGrid() {
     }
 }
 
-
-function player2Setup(){
-    return ''
-}
-
 /**
  * @description alternate player by switching 'turn' value.
  * 
@@ -48,18 +43,39 @@ function changePlayer() {
     let displayText = document.getElementById("changePlayerText")
     let player = turn == 'X' ? player1 : player2 + "( Computer )"
     let nextPlayer = turn == 'O' ? player1 : player2 + "( Computer )"
+
+    // check if the game is tied. set 'game over' to true. 
+    if (checkTie()) {
+        let msg = "It's a tie."
+        gameOver = true
+        renderMainGrid();
+        declareResult(msg)
+    }
     // check if the game is won by someone. set 'game over' to true. 
-    if (checkWinner(turn)) {
+    else if (checkWinner()) {
         let msg = player + " won !!"
         gameOver = true
         renderMainGrid();
         declareResult(msg)
     }
+    // else if (turn === 'X') {
+    //     turn = 'O';
+    //     displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
+    //     return;
+    // } else {
+    //     turn = 'X';
+    //     displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
+    // }
     else if (turn === 'X') {
-        turn = 'O';
+        turn = 'O'
+        skipaStep()
+        renderMainGrid();
+        addClickHandlers();
+        changePlayer();
         displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
-        return;
-    } else {
+        return
+    }
+    else {
         turn = 'X';
         displayText.innerHTML = "<h4 class='displayText'> Its " + nextPlayer + "'s Turn.</h4>"
     }
@@ -71,7 +87,7 @@ function filterEmptyCells(beforeFilter) {
     return Object.keys(beforeFilter).filter(key => indexes[key] === 3)
 }
 
-function skipaStep(str) {
+function skipaStep() {
     // check for empty cells.
     // pick random number
     // assign 'O' value
@@ -82,7 +98,6 @@ function skipaStep(str) {
             emptyCells.push(index)
         }
     }
-    console.log("emptyCells",emptyCells)
     // get unique identifiers for empty cels 
     let res = Object.keys(indexes).filter(key => indexes[key])
     for (let index = 0; index < emptyCells.length; index++) {
@@ -92,7 +107,6 @@ function skipaStep(str) {
     let index = res[Math.floor(Math.random() * res.length)]
     let i = index.split("_")[0]
     let j = index.split("_")[1]
-
     //re-rendreing the table with new value.
     grid[i][j] = 2;
 }
@@ -156,33 +170,8 @@ function onBoxClick() {
     var colIdx = this.getAttribute("colIdx");
     let newValue = turn == 'O' ? 2 : 1;
     grid[colIdx][rowIdx] = newValue;
-    handleSeriesofEvents();    // handle series of events once action is dispatched.
-}
-
-/**
- * 
- * @param {int} rowIdx - row index of clicked cell.
- * @param {int} colIdx - columnd index of click cell.
- * @returns - conditional 
- */
-function handleSeriesofEvents() {
-    // check if the game is tied. set 'game over' to true. 
-    if (checkTie()) {
-        let msg = "It's a tie."
-        gameOver = true
-        renderMainGrid();
-        declareResult(msg)
-    }
-    else if(turn == "O"){
-        skipaStep();
-        renderMainGrid();
-        addClickHandlers();
-    }
-    else {
-        renderMainGrid();
-        addClickHandlers();
-    }
-    // change the player 
+    renderMainGrid();
+    addClickHandlers();
     changePlayer();
 }
 
@@ -208,7 +197,7 @@ function checkTie() {
  * 1-9 are cell index in 1D array.
  * this function checks for all possible winning combination. 
  */
-function checkWinner(turn) {
+function checkWinner() {
     let result = false;
     if (checkRow(1, 2, 3, turn) ||
         checkRow(4, 5, 6, turn) ||
@@ -269,6 +258,7 @@ function addClickHandlers() {
  */
 function renderBoard() {
     grid = []
+    turn = 'X'
     initializeGrid();
     renderMainGrid();
     addClickHandlers();
