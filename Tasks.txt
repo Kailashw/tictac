@@ -1,0 +1,17 @@
+
+    Tasks
+
+a. understand the code.
+b. come up with possible steps
+c. create basic functions
+d. create two player game.
+e. you can use, random numebr generator for computer game ?? may be??
+
+STEPS:
+1. Create reset button to "Reset the Board"
+2. Alternate Player with an "O"
+3. Block the already acquired cell from re entry.
+4. look for tie when all cells are taken.
+5. come up with winning combination.
+6. check the moves for winning combination.
+7. display messages at gameend.

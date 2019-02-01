@@ -41,7 +41,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 100px;
+    margin-bottom: 50px;
 }
 
 .cross{
@@ -50,3 +50,14 @@
     border-radius: 5px;
     line-height: 100px;
 }
+
+.button {
+    background-color: rgb(91, 76, 175); /* Green */
+    border: none;
+    color: currentColor;
+    padding: 11px 17px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+  }
