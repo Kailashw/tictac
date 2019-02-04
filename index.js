@@ -1,44 +1,72 @@
 
 //initalizing global parameters.
 var grid = [];
-const GRID_LENGTH = 3;
+const GRID_LENGTH = 4;          // configurable griod size.
 let turn = 'X';
 let gameOver = false;
 
+// for player names.
 var player1 = '';
 var player2 = '';
 
+const indexes = {}
 
-const indexes = {
-	'0_0':1 ,
-	'0_1':2,
-	'0_2':3,
-	'1_0':4,
-	'1_1':5,
-	'1_2':6,
-	'2_0':7,
-	'2_1':8,
-	'2_2':9
-}
+const win1Condition = [
+    [1]
+]
 
+const win2Condition = [
+    [1,2],
+    [1,4],
+    [2,4],
+    [2,3]
+]
 
+const win3Condition = [
+    [1,2,3],
+    [4,5,6],
+    [7,8,9],
+    [1,5,9],
+    [3,5,7],
+    [1,4,7],
+    [2,5,8],
+    [3,6,9]
+]
 
-function filterEmptyCells(){
-    let arr = []
-    // only those wh
-    arr = Object.keys(indexes_copy).filter(key => indexes_copy[key] === 3)
-    //filter empty arr and pass it
-    setRandomElement(arr,turn)
+const win4Condition = [
+    [1,2,3,4],
+    [5,6,7,8],
+    [9,10,11,12],
+    [13,14,15,16],
+    [1,5,9,13],
+    [2,6,10,14],
+    [3,7,11,15],
+    [4,8,12,16],
+    [1,6,11,16],
+    [4,7,10,13]
+]
+
+// generic winning condition mapper.
+const winningObjectMapping = {
+    1 : win1Condition,
+    2 : win2Condition,
+    3 : win3Condition,
+    4 : win4Condition
 }
 
 /**
- * @param {array} arr- 
+ * generate uniqueindexes for n * n matrix.
  */
-function setRandomElement (arr,turn){
-    let index = arr[Math.floor(Math.random()*arr.length)]
-    let i = index.split("_")[0]
-    let j = index.split("_")[1]
-    grid[i][j] = turn
+function generateIndexes() {
+    let count = 1;
+    for (let xIndex = 0; xIndex < GRID_LENGTH; xIndex++) {
+        for (let yIndex = 0; yIndex  < GRID_LENGTH; yIndex++) {
+            let key = xIndex+"_"+yIndex
+            indexes[key] = count
+            count ++
+        } 
+    }    
+
 }
 
 /**
@@ -62,7 +90,7 @@ function initializeGrid() {
 function changePlayer() {
     let displayText = document.getElementById("changePlayerText")
     // check if the game is won by someone. set 'game over' to true. 
-    if (checkWinner(turn)) {
+    if (checkWinner(GRID_LENGTH,turn)) {
         let player = turn == 'X' ? player1 : player2
         let msg = player + " won !!"
         gameOver = true
@@ -157,7 +185,6 @@ function handleSeriesofEvents(rowIdx,colIdx) {
         renderMainGrid();
         declareResult(msg)
     }
-    
     else {
         renderMainGrid();
         addClickHandlers();   
@@ -170,7 +197,7 @@ function handleSeriesofEvents(rowIdx,colIdx) {
  * @description - check tie condition by looking for values in each cells.
  */
 function checkTie() {
-    // need to check if all the cells are > 0
+    // need to check if all the cell values are > 0
     let count = 0
     for (let i = 0; i < grid.length; i++) {
         for (let j = 0; j < grid[i].length; j++) {
@@ -182,38 +209,44 @@ function checkTie() {
     return count > 0 ? false : true
 }
 
+
+
 /**
- * 
- * @param {string} turn - character 'X or 'O' 
- * 1-9 are cell index in 1D array.
- * this function checks for all possible winning combination. 
+ * check if all the elements in an object have value true.
+ * @param {Object} obj 
  */
-function checkWinner(turn) {
-    let result = false;
-    if(checkRow(1,2,3,turn) || 
-        checkRow(4,5,6,turn) ||
-        checkRow(7,8,9,turn) ||
-        checkRow(1,4,7,turn) ||
-        checkRow(2,5,8,turn) ||
-        checkRow(3,6,9,turn) ||
-        checkRow(1,5,9,turn) ||
-        checkRow(3,5,7,turn) )
-    {
-        result = true
+function allValuesTrue(obj)
+{
+    for(let el in obj)
+        if(!obj[el]) return false;
+    return true;
+}
+
+/**
+ * function to check the winning condition irrespective of grid length.
+ * @param {string} turn 
+ * @param {int} GRID_LENGTH 
+ */
+function checkWinner(GRID_LENGTH,turn){
+    let result = false
+    let arr = winningObjectMapping[GRID_LENGTH] // fetch winningcombination based on grid_length
+    let obj = { }
+    for(let i = 0; i < arr.length ; i++){
+        for(let j = 0; j < arr[0].length ; j++){
+            let key = [i]+"_"+[j]
+            obj[key]= getCellValue(arr[i][j]) === turn
+        }
+        if(allValuesTrue(obj)){
+            result = true
+            return result
+        }else{
+            obj = {}
+        }
     }
     return result
 }
 
-// return true if winning 'X|0' is present in all of them, false otherwise.
-function checkRow(a,b,c,turn){
-    var result = false
-    if(getCellValue(a) == turn && getCellValue(b) == turn && getCellValue(c) ==turn ){
-        result = true;
-    }   
-    return result
-}
-
-
+// get cell value in matrix by unique id.
 function getCellValue(id){
     return document.getElementById(id).innerText
 }
@@ -256,12 +289,14 @@ function renderBoard() {
 
 // call it for the first time when HTML loads.
 renderBoard()
+generateIndexes()
 
 // Could do nicer with UI.
 function startGame(){
     confirm("You will be redirect to game. Player 1 is 'X' and Player 2 id 'O'")
     player1 = prompt("What's Player 1 Name ?") || 'X'
     player2 = prompt("What's Player 2 Name ?") || 'O'
+    
 }
 
 startGame()
