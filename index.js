@@ -1,7 +1,7 @@
 
 //initalizing global parameters.
 var grid = [];
-const GRID_LENGTH = 5;          // configurable griod size.
+const GRID_LENGTH = 2;          // configurable grid size.
 let turn = 'X';
 let gameOver = false;
 
@@ -18,6 +18,7 @@ const win1Condition = [
 const win2Condition = [
     [1,2],
     [1,4],
+    [1,3],
     [2,4],
     [2,3]
 ]
@@ -61,6 +62,30 @@ const win5Condition = [
     [5,9,13,17,21]
 ]
 
+/**
+ * Steps :
+ * 1. Generate a n*n matrix with indexing starting from 1 to n*n and assign it to temp_arr
+ * 2. copy the "temp_arr" to a vaiable and call it 'winningCombo',
+ * 3. loop thourgh "temp_arr", fetch 1 to n the elemnt of each row and store it in an array 
+ *      ex: [1,2,3,
+ *           4,5,6,
+ *           7,8,9] => [[1,4,7],[2,5,8],[3,6,9]]
+ * 4. push the result of previous to 'winningCombo'.
+ * 5. fetch both the diagonals and append it to 'winningCombo'.
+ *      ex: for nth matrix fetch indexes by slicing every n+1th element
+ *          var arr = [1,2,3,4,5,
+                       6,7,8,9,10,
+                       11,12,13,14,15,
+                       16,17,18,19,20,
+                       21,22,23,24,25]
+                n = 5
+                diagonal = []
+                for (i=1;i<n*n;i+n){
+                    diagonal.push(i)
+                }
+ */
+
+// @TODO : refactor code to calculate winning conditions
 // generic winning condition mapper.
 const winningObjectMapping = {
     1 : win1Condition,
