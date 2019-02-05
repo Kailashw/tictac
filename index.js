@@ -1,7 +1,7 @@
 
 //initalizing global parameters.
 var grid = [];
-const GRID_LENGTH = 4;          // configurable griod size.
+const GRID_LENGTH = 5;          // configurable griod size.
 let turn = 'X';
 let gameOver = false;
 
@@ -46,12 +46,28 @@ const win4Condition = [
     [4,7,10,13]
 ]
 
+const win5Condition = [
+    [1,2,3,4,5],
+    [6,7,8,9,10],
+    [11,12,13,14,15],
+    [16,17,18,19,20],
+    [21,22,23,24,25],
+    [1,6,11,16,21],
+    [2,7,12,17,22],
+    [3,8,13,18,23],
+    [4,9,14,19,24],
+    [5,10,15,20,25],
+    [1,7,13,19,25],
+    [5,9,13,17,21]
+]
+
 // generic winning condition mapper.
 const winningObjectMapping = {
     1 : win1Condition,
     2 : win2Condition,
     3 : win3Condition,
-    4 : win4Condition
+    4 : win4Condition,
+    5 : win5Condition
 }
 
 /**
@@ -67,6 +83,40 @@ function generateIndexes() {
         } 
     }    
 
+}
+
+
+function constructWinningMoves(){
+    // genearate amtrix with n * n index
+    // slice first element from each sub-array
+    // slice diagonal
+    let GRID_LENGTH = 5   // global gridlength
+    let actArr = []                 // n*n array
+	let count = 1
+    for(let i=0;i < GRID_LENGTH;i++){
+        const temp_array = []
+        for(let j=0;j< GRID_LENGTH;j++){
+              temp_array.push(count)
+          count +=1
+        }
+        actArr.push(temp_array)
+    }
+    let winningCombination = actArr         //intialize it with  actarr as it's part of winning combination.
+    actArr.reduce( (accumulator, currentValue, currentIndex, array) => 
+    {
+        for(let i = 0 ; i < GRID_LENGTH; i++){
+            const temp_arr = []
+            // push accumlator first time else push current indexes i'th values
+            if(currentIndex == 1){
+                temp_arr.push(accumulator[0])
+            }
+            else{
+                temp_arr.push(array[currentIndex][1])   
+            }
+			winningCombination.push(temp_arr)
+        }            
+    }) ;
+	console.log(winningCombination)
 }
 
 /**
