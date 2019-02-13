@@ -1,7 +1,7 @@
 
 //initalizing global parameters.
 var grid = [];
-const GRID_LENGTH = 2;          // configurable grid size.
+const GRID_LENGTH = 8;          // configurable grid size.
 let turn = 'X';
 let gameOver = false;
 
@@ -11,89 +11,66 @@ var player2 = '';
 
 const indexes = {}
 
-const win1Condition = [
-    [1]
-]
-
-const win2Condition = [
-    [1,2],
-    [1,4],
-    [1,3],
-    [2,4],
-    [2,3]
-]
-
-const win3Condition = [
-    [1,2,3],
-    [4,5,6],
-    [7,8,9],
-    [1,5,9],
-    [3,5,7],
-    [1,4,7],
-    [2,5,8],
-    [3,6,9]
-]
-
-const win4Condition = [
-    [1,2,3,4],
-    [5,6,7,8],
-    [9,10,11,12],
-    [13,14,15,16],
-    [1,5,9,13],
-    [2,6,10,14],
-    [3,7,11,15],
-    [4,8,12,16],
-    [1,6,11,16],
-    [4,7,10,13]
-]
-
-const win5Condition = [
-    [1,2,3,4,5],
-    [6,7,8,9,10],
-    [11,12,13,14,15],
-    [16,17,18,19,20],
-    [21,22,23,24,25],
-    [1,6,11,16,21],
-    [2,7,12,17,22],
-    [3,8,13,18,23],
-    [4,9,14,19,24],
-    [5,10,15,20,25],
-    [1,7,13,19,25],
-    [5,9,13,17,21]
-]
+/**
+ * Generate 'n*n' one dimensional array.
+ * @param {int} n 
+ */
+const GenerateMatrix = (n) =>{
+    let act_arr = []
+    let count = 1
+    let temp_arr = []
+    for (let index = 1; index <= n * n ; index++) {
+        temp_arr.push(count)
+        count ++
+        if(index % n == 0){
+            act_arr.push(temp_arr)
+            temp_arr = []
+        }
+    }
+    return act_arr 
+}
 
 /**
- * Steps :
- * 1. Generate a n*n matrix with indexing starting from 1 to n*n and assign it to temp_arr
- * 2. copy the "temp_arr" to a vaiable and call it 'winningCombo',
- * 3. loop thourgh "temp_arr", fetch 1 to n the elemnt of each row and store it in an array 
- *      ex: [1,2,3,
- *           4,5,6,
- *           7,8,9] => [[1,4,7],[2,5,8],[3,6,9]]
- * 4. push the result of previous to 'winningCombo'.
- * 5. fetch both the diagonals and append it to 'winningCombo'.
- *      ex: for nth matrix fetch indexes by slicing every n+1th element
- *          var arr = [1,2,3,4,5,
-                       6,7,8,9,10,
-                       11,12,13,14,15,
-                       16,17,18,19,20,
-                       21,22,23,24,25]
-                n = 5
-                diagonal = []
-                for (i=1;i<n*n;i+n){
-                    diagonal.push(i)
-                }
+ * fetch first element from each row
+ * @param {Array} arr 
  */
+const FetchDiagonals = (arr) =>{
+    let retArr = []
+    let tempLeft = []
+    let tempRight = []
+    // fetch R2L
+    for (let index = 1; index <= arr.length * arr.length; index+=arr.length+1) {
+        tempLeft.push(index)
+    }
+    // fetch L2R
+    for (let index = arr.length; index < arr.length * arr.length; index+=arr.length - 1) {
+        tempRight.push(index)
+    }
 
-// @TODO : refactor code to calculate winning conditions
-// generic winning condition mapper.
-const winningObjectMapping = {
-    1 : win1Condition,
-    2 : win2Condition,
-    3 : win3Condition,
-    4 : win4Condition,
-    5 : win5Condition
+    //push diagonals
+    retArr.push(tempLeft)
+    retArr.push(tempRight)
+
+    return retArr
 }
+
+
+const arrayColumn = (arr, n) => arr.map(x => x[n]);
+
+const FetchColumns = (arr) =>{
+    let retArr = []
+    for (let index = 0; index < arr.length; index++) {
+        const element = arrayColumn(arr,index)
+        retArr.push(element)
+    }
+    return retArr
+}
+
+let WinningComb = GenerateMatrix(GRID_LENGTH)
+let columns = FetchColumns(WinningComb)
+let diagonals = FetchDiagonals(WinningComb)
+WinningComb = WinningComb.concat(columns)
+WinningComb = WinningComb.concat(diagonals)
 
 /**
  * generate uniqueindexes for n * n matrix.
@@ -108,40 +85,6 @@ function generateIndexes() {
         } 
     }    
 
-}
-
-
-function constructWinningMoves(){
-    // genearate amtrix with n * n index
-    // slice first element from each sub-array
-    // slice diagonal
-    let GRID_LENGTH = 5   // global gridlength
-    let actArr = []                 // n*n array
-	let count = 1
-    for(let i=0;i < GRID_LENGTH;i++){
-        const temp_array = []
-        for(let j=0;j< GRID_LENGTH;j++){
-              temp_array.push(count)
-          count +=1
-        }
-        actArr.push(temp_array)
-    }
-    let winningCombination = actArr         //intialize it with  actarr as it's part of winning combination.
-    actArr.reduce( (accumulator, currentValue, currentIndex, array) => 
-    {
-        for(let i = 0 ; i < GRID_LENGTH; i++){
-            const temp_arr = []
-            // push accumlator first time else push current indexes i'th values
-            if(currentIndex == 1){
-                temp_arr.push(accumulator[0])
-            }
-            else{
-                temp_arr.push(array[currentIndex][1])   
-            }
-			winningCombination.push(temp_arr)
-        }            
-    }) ;
-	console.log(winningCombination)
 }
 
 /**
@@ -304,7 +247,8 @@ function allValuesTrue(obj)
  */
 function checkWinner(GRID_LENGTH,turn){
     let result = false
-    let arr = winningObjectMapping[GRID_LENGTH] // fetch winningcombination based on grid_length
+    let arr = WinningComb // fetch winningcombination based on grid_length
+    console.log(arr)
     let obj = { }
     for(let i = 0; i < arr.length ; i++){
         for(let j = 0; j < arr[0].length ; j++){
