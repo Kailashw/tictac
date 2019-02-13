@@ -1,7 +1,7 @@
 
 //initalizing global parameters.
 var grid = [];
-const GRID_LENGTH = 8;          // configurable grid size.
+const GRID_LENGTH = 3;          // configurable grid size.
 let turn = 'X';
 let gameOver = false;
 
@@ -15,35 +15,35 @@ const indexes = {}
  * Generate 'n*n' one dimensional array.
  * @param {int} n 
  */
-const GenerateMatrix = (n) =>{
+const GenerateMatrix = (n) => {
     let act_arr = []
     let count = 1
     let temp_arr = []
-    for (let index = 1; index <= n * n ; index++) {
+    for (let index = 1; index <= n * n; index++) {
         temp_arr.push(count)
-        count ++
-        if(index % n == 0){
+        count++
+        if (index % n == 0) {
             act_arr.push(temp_arr)
             temp_arr = []
         }
     }
-    return act_arr 
+    return act_arr
 }
 
 /**
  * fetch first element from each row
  * @param {Array} arr 
  */
-const FetchDiagonals = (arr) =>{
+const FetchDiagonals = (arr) => {
     let retArr = []
     let tempLeft = []
     let tempRight = []
     // fetch R2L
-    for (let index = 1; index <= arr.length * arr.length; index+=arr.length+1) {
+    for (let index = 1; index <= arr.length * arr.length; index += arr.length + 1) {
         tempLeft.push(index)
     }
     // fetch L2R
-    for (let index = arr.length; index < arr.length * arr.length; index+=arr.length - 1) {
+    for (let index = arr.length; index < arr.length * arr.length; index += arr.length - 1) {
         tempRight.push(index)
     }
 
@@ -57,10 +57,10 @@ const FetchDiagonals = (arr) =>{
 
 const arrayColumn = (arr, n) => arr.map(x => x[n]);
 
-const FetchColumns = (arr) =>{
+const FetchColumns = (arr) => {
     let retArr = []
     for (let index = 0; index < arr.length; index++) {
-        const element = arrayColumn(arr,index)
+        const element = arrayColumn(arr, index)
         retArr.push(element)
     }
     return retArr
@@ -78,12 +78,12 @@ WinningComb = WinningComb.concat(diagonals)
 function generateIndexes() {
     let count = 1;
     for (let xIndex = 0; xIndex < GRID_LENGTH; xIndex++) {
-        for (let yIndex = 0; yIndex  < GRID_LENGTH; yIndex++) {
-            let key = xIndex+"_"+yIndex
+        for (let yIndex = 0; yIndex < GRID_LENGTH; yIndex++) {
+            let key = xIndex + "_" + yIndex
             indexes[key] = count
-            count ++
-        } 
-    }    
+            count++
+        }
+    }
 
 }
 
@@ -108,7 +108,7 @@ function initializeGrid() {
 function changePlayer() {
     let displayText = document.getElementById("changePlayerText")
     // check if the game is won by someone. set 'game over' to true. 
-    if (checkWinner(GRID_LENGTH,turn)) {
+    if (checkWinner(GRID_LENGTH, turn)) {
         let player = turn == 'X' ? player1 : player2
         let msg = player + " won !!"
         gameOver = true
@@ -117,13 +117,13 @@ function changePlayer() {
     }
     else if (turn === 'X') {
         turn = 'O';
-        displayText.innerHTML = "<h4 class='displayText'> Its "+turn+"'s Turn.</h4>"
+        displayText.innerHTML = "<h4 class='displayText'> Its " + turn + "'s Turn.</h4>"
         return;
-    }else{
+    } else {
         turn = 'X';
-        displayText.innerHTML = "<h4 class='displayText'> Its "+turn+"'s Turn.</h4>"
+        displayText.innerHTML = "<h4 class='displayText'> Its " + turn + "'s Turn.</h4>"
     }
-    
+
 }
 
 /**
@@ -148,8 +148,8 @@ function getRowBoxes(colIdx) {
         else if (gridValue === 2) {
             content = 'O';
         }
-        index = indexes[colIdx+"_"+rowIdx]
-        rowDivs = rowDivs + '<div id="'+index+'" colIdx="' + colIdx + '" rowIdx="' + rowIdx + '" class="box ' +
+        index = indexes[colIdx + "_" + rowIdx]
+        rowDivs = rowDivs + '<div id="' + index + '" colIdx="' + colIdx + '" rowIdx="' + rowIdx + '" class="box ' +
             additionalClass + '">' + content + '</div>';
     }
     return rowDivs;
@@ -186,7 +186,7 @@ function onBoxClick() {
     var colIdx = this.getAttribute("colIdx");
     let newValue = turn == 'O' ? 2 : 1;
     grid[colIdx][rowIdx] = newValue;
-    handleSeriesofEvents(rowIdx,colIdx);    // handle series of events once action is dispatched.
+    handleSeriesofEvents(rowIdx, colIdx);    // handle series of events once action is dispatched.
 }
 
 /**
@@ -195,7 +195,7 @@ function onBoxClick() {
  * @param {int} colIdx - columnd index of click cell.
  * @returns - conditional 
  */
-function handleSeriesofEvents(rowIdx,colIdx) {
+function handleSeriesofEvents(rowIdx, colIdx) {
     // check if the game is tied. set 'game over' to true. 
     if (checkTie()) {
         let msg = "It's a tie."
@@ -205,10 +205,10 @@ function handleSeriesofEvents(rowIdx,colIdx) {
     }
     else {
         renderMainGrid();
-        addClickHandlers();   
+        addClickHandlers();
     }
     // change the player 
-    changePlayer(rowIdx,colIdx);
+    changePlayer(rowIdx, colIdx);
 }
 
 /**
@@ -233,10 +233,9 @@ function checkTie() {
  * check if all the elements in an object have value true.
  * @param {Object} obj 
  */
-function allValuesTrue(obj)
-{
-    for(let el in obj)
-        if(!obj[el]) return false;
+function allValuesTrue(obj) {
+    for (let el in obj)
+        if (!obj[el]) return false;
     return true;
 }
 
@@ -245,20 +244,19 @@ function allValuesTrue(obj)
  * @param {string} turn 
  * @param {int} GRID_LENGTH 
  */
-function checkWinner(GRID_LENGTH,turn){
+function checkWinner(GRID_LENGTH, turn) {
     let result = false
     let arr = WinningComb // fetch winningcombination based on grid_length
-    console.log(arr)
-    let obj = { }
-    for(let i = 0; i < arr.length ; i++){
-        for(let j = 0; j < arr[0].length ; j++){
-            let key = [i]+"_"+[j]
-            obj[key]= getCellValue(arr[i][j]) === turn
+    let obj = {}
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < arr[0].length; j++) {
+            let key = [i] + "_" + [j]
+            obj[key] = getCellValue(arr[i][j]) === turn
         }
-        if(allValuesTrue(obj)){
+        if (allValuesTrue(obj)) {
             result = true
             return result
-        }else{
+        } else {
             obj = {}
         }
     }
@@ -266,7 +264,7 @@ function checkWinner(GRID_LENGTH,turn){
 }
 
 // get cell value in matrix by unique id.
-function getCellValue(id){
+function getCellValue(id) {
     return document.getElementById(id).innerText
 }
 
@@ -275,7 +273,7 @@ function getCellValue(id){
  */
 function declareResult(msg) {
     let gameOverMsg = document.getElementById("resultModal")
-    gameOverMsg.innerHTML = "<h1 class='displayText'>"+msg+"</h1>"
+    gameOverMsg.innerHTML = "<h1 class='displayText'>" + msg + "</h1>"
 }
 
 /**
@@ -285,7 +283,7 @@ function addClickHandlers() {
     var boxes = document.getElementsByClassName("box");
     // add click handlers to only unselected boxes.
     for (var idx = 0; idx < boxes.length; idx++) {
-        if (!boxes[idx].innerText){
+        if (!boxes[idx].innerText) {
             boxes[idx].addEventListener('click', onBoxClick, false);
         }
     }
@@ -311,11 +309,11 @@ renderBoard()
 generateIndexes()
 
 // Could do nicer with UI.
-function startGame(){
+function startGame() {
     confirm("You will be redirect to game. Player 1 is 'X' and Player 2 id 'O'")
     player1 = prompt("What's Player 1 Name ?") || 'X'
     player2 = prompt("What's Player 2 Name ?") || 'O'
-    
+
 }
 
 startGame()
