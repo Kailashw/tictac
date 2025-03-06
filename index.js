@@ -1,319 +1,295 @@
+// Constants
+const GRID_LENGTH = 3;
+const PLAYER_X = "X";
+const PLAYER_O = "O";
 
-//initalizing global parameters.
-var grid = [];
-const GRID_LENGTH = 3;          // configurable grid size.
-let turn = 'X';
+// Game state
+let grid = [];
+let turn = PLAYER_X;
 let gameOver = false;
+let player1Name = "";
+let player2Name = "";
+const indexes = {};
 
-// for player names.
-var player1 = '';
-var player2 = '';
-
-const indexes = {}
+// HTML Elements (Consider fetching these in `startGame` or `renderBoard`)
+const changePlayerText = document.getElementById("changePlayerText");
+const resultModal = document.getElementById("resultModal");
+const gridElement = document.getElementById("grid"); // Added this
 
 /**
- * Generate 'n*n' one dimensional array.
- * @param {int} n 
+ * Generates a 2D array (n x n) representing the winning combinations.
+ * @param {number} n The size of the grid.
+ * @returns {number[][]} A 2D array representing the grid.
  */
-const GenerateMatrix = (n) => {
-    let act_arr = []
-    let count = 1
-    let temp_arr = []
-    for (let index = 1; index <= n * n; index++) {
-        temp_arr.push(count)
-        count++
-        if (index % n == 0) {
-            act_arr.push(temp_arr)
-            temp_arr = []
-        }
+const generateWinningCombinationsMatrix = (n) => {
+  const matrix = [];
+  let count = 1;
+  for (let i = 0; i < n; i++) {
+    const row = [];
+    for (let j = 0; j < n; j++) {
+      row.push(count++);
     }
-    return act_arr
-}
+    matrix.push(row);
+  }
+  return matrix;
+};
 
 /**
- * fetch first element from each row
- * @param {Array} arr 
+ * Extracts diagonal winning combinations from a square matrix.
+ * @param {number[][]} matrix The square matrix.
+ * @returns {number[][]} An array containing two arrays: the main diagonal and the anti-diagonal.
  */
-const FetchDiagonals = (arr) => {
-    let retArr = []
-    let tempLeft = []
-    let tempRight = []
-    // fetch R2L
-    for (let index = 1; index <= arr.length * arr.length; index += arr.length + 1) {
-        tempLeft.push(index)
-    }
-    // fetch L2R
-    for (let index = arr.length; index < arr.length * arr.length; index += arr.length - 1) {
-        tempRight.push(index)
-    }
+const extractDiagonals = (matrix) => {
+  const n = matrix.length;
+  const mainDiagonal = [];
+  const antiDiagonal = [];
 
-    //push diagonals
-    retArr.push(tempLeft)
-    retArr.push(tempRight)
+  for (let i = 0; i < n; i++) {
+    mainDiagonal.push(matrix[i][i]);
+    antiDiagonal.push(matrix[i][n - 1 - i]);
+  }
 
-    return retArr
-}
-
-
-const arrayColumn = (arr, n) => arr.map(x => x[n]);
-
-const FetchColumns = (arr) => {
-    let retArr = []
-    for (let index = 0; index < arr.length; index++) {
-        const element = arrayColumn(arr, index)
-        retArr.push(element)
-    }
-    return retArr
-}
-
-let WinningComb = GenerateMatrix(GRID_LENGTH)
-let columns = FetchColumns(WinningComb)
-let diagonals = FetchDiagonals(WinningComb)
-WinningComb = WinningComb.concat(columns)
-WinningComb = WinningComb.concat(diagonals)
+  return [mainDiagonal, antiDiagonal];
+};
 
 /**
- * generate uniqueindexes for n * n matrix.
+ * Extracts columns from a 2D array.
+ * @param {any[][]} arr The 2D array.
+ * @returns {any[][]} An array of columns.
+ */
+const extractColumns = (arr) => {
+  const numCols = arr[0].length;
+  const columns = [];
+
+  for (let i = 0; i < numCols; i++) {
+    const column = arr.map((row) => row[i]);
+    columns.push(column);
+  }
+  return columns;
+};
+
+// Generate winning combinations outside functions for efficiency
+let winningCombinationsMatrix = generateWinningCombinationsMatrix(GRID_LENGTH);
+let columns = extractColumns(winningCombinationsMatrix);
+let diagonals = extractDiagonals(winningCombinationsMatrix);
+
+// Combine all winning combinations
+let winningCombinations = winningCombinationsMatrix.concat(columns, diagonals);
+
+/**
+ * Generates unique indexes for each cell in the grid (e.g., "0_0", "0_1", etc.).
  */
 function generateIndexes() {
-    let count = 1;
-    for (let xIndex = 0; xIndex < GRID_LENGTH; xIndex++) {
-        for (let yIndex = 0; yIndex < GRID_LENGTH; yIndex++) {
-            let key = xIndex + "_" + yIndex
-            indexes[key] = count
-            count++
-        }
+  let count = 1;
+  for (let xIndex = 0; xIndex < GRID_LENGTH; xIndex++) {
+    for (let yIndex = 0; yIndex < GRID_LENGTH; yIndex++) {
+      const key = `${xIndex}_${yIndex}`; // Use template literals for readability
+      indexes[key] = count;
+      count++;
     }
-
+  }
 }
 
 /**
- * initalize grid of 3*3 matrix with 
- * default value '0' (zero) in it.
+ * Initializes the game grid with default values (0).
  */
 function initializeGrid() {
-    for (let colIdx = 0; colIdx < GRID_LENGTH; colIdx++) {
-        const tempArray = [];
-        for (let rowidx = 0; rowidx < GRID_LENGTH; rowidx++) {
-            tempArray.push(0);
-        }
-        grid.push(tempArray);
-    }
+  grid = Array(GRID_LENGTH)
+    .fill(null)
+    .map(() => Array(GRID_LENGTH).fill(0)); // More concise way to create the grid
 }
 
 /**
- * @description alternate player by switching 'turn' value.
- * 
+ * Switches the current player's turn.
  */
 function changePlayer() {
-    let displayText = document.getElementById("changePlayerText")
-    // check if the game is won by someone. set 'game over' to true. 
-    if (checkWinner(GRID_LENGTH, turn)) {
-        let player = turn == 'X' ? player1 : player2
-        let msg = player + " won !!"
-        gameOver = true
-        renderMainGrid();
-        declareResult(msg)
-    }
-    else if (turn === 'X') {
-        turn = 'O';
-        displayText.innerHTML = "<h4 class='displayText'> Its " + turn + "'s Turn.</h4>"
-        return;
-    } else {
-        turn = 'X';
-        displayText.innerHTML = "<h4 class='displayText'> Its " + turn + "'s Turn.</h4>"
-    }
+  if (checkWinner(turn)) {
+    const winningPlayerName = turn === PLAYER_X ? player1Name : player2Name;
+    const message = `${winningPlayerName} won!`;
+    gameOver = true;
+    renderMainGrid();
+    declareResult(message);
+    return; // Exit early if game is won
+  }
 
+  turn = turn === PLAYER_X ? PLAYER_O : PLAYER_X; //Ternary operator for conciseness
+  changePlayerText.innerHTML = `<h4 class='displayText'> It's ${turn}'s Turn.</h4>`;
 }
 
 /**
- * @description - lists styled div elements (and also, content if any during subsiquent render)   
- * @param {int} colIdx - column id
- * @returns - HTML div tags to be rendered.
+ * Creates the HTML for a single cell in the grid.
+ * @param {number} colIdx The column index.
+ * @param {number} rowIdx The row index.
+ * @returns {string} The HTML for the cell.
  */
-function getRowBoxes(colIdx) {
-    let rowDivs = '';
+function createRowBox(colIdx, rowIdx) {
+  const sum = colIdx + rowIdx;
+  const backgroundClass = sum % 2 === 0 ? "lightBackground" : "darkBackground";
+  const gridValue = grid[colIdx][rowIdx];
+  let content = "";
 
-    for (let rowIdx = 0; rowIdx < GRID_LENGTH; rowIdx++) {
-        let additionalClass = 'darkBackground';
-        let content = '';
-        const sum = colIdx + rowIdx;
-        if (sum % 2 === 0) {
-            additionalClass = 'lightBackground'
-        }
-        const gridValue = grid[colIdx][rowIdx];
-        if (gridValue === 1) {
-            content = 'X';
-        }
-        else if (gridValue === 2) {
-            content = 'O';
-        }
-        index = indexes[colIdx + "_" + rowIdx]
-        rowDivs = rowDivs + '<div id="' + index + '" colIdx="' + colIdx + '" rowIdx="' + rowIdx + '" class="box ' +
-            additionalClass + '">' + content + '</div>';
-    }
-    return rowDivs;
+  if (gridValue === 1) {
+    content = PLAYER_X;
+  } else if (gridValue === 2) {
+    content = PLAYER_O;
+  }
+
+  const index = indexes[`${colIdx}_${rowIdx}`];
+  return `<div id="${index}" colIdx="${colIdx}" rowIdx="${rowIdx}" class="box ${backgroundClass}">${content}</div>`;
 }
 
 /**
- * @description - lists HTML tags with matrix format.
- * @returns - HTML tags to render.
+ * Creates the HTML for a row of cells.
+ * @param {number} colIdx The column index for the row.
+ * @returns {string} The HTML for the row.
+ */
+function createRow(colIdx) {
+  let rowDivs = "";
+  for (let rowIdx = 0; rowIdx < GRID_LENGTH; rowIdx++) {
+    rowDivs += createRowBox(colIdx, rowIdx);
+  }
+  return `<div class="rowStyle">${rowDivs}</div>`;
+}
+
+/**
+ * Generates the HTML for the entire game grid.
  */
 function getColumns() {
-    let columnDivs = '';
-    for (let colIdx = 0; colIdx < GRID_LENGTH; colIdx++) {
-        let coldiv = getRowBoxes(colIdx);
-        coldiv = '<div class="rowStyle">' + coldiv + '</div>';
-        columnDivs = columnDivs + coldiv;
-    }
-    return columnDivs;
+  let columnDivs = "";
+  for (let colIdx = 0; colIdx < GRID_LENGTH; colIdx++) {
+    columnDivs += createRow(colIdx);
+  }
+  return `<div class="columnsStyle">${columnDivs}</div>`;
 }
 
 /**
- * @description - renders matrix into HTML page by looking up for 'static' element id.
+ * Renders the game grid in the HTML.
  */
 function renderMainGrid() {
-    const parent = document.getElementById("grid");
-    const columnDivs = getColumns();
-    parent.innerHTML = '<div class="columnsStyle">' + columnDivs + '</div>';
+  gridElement.innerHTML = getColumns();
 }
 
 /**
- * @description - render the content 'X' or 'O' in to clicked cell.
+ * Handles a cell click event.
  */
 function onBoxClick() {
-    var rowIdx = this.getAttribute("rowIdx");
-    var colIdx = this.getAttribute("colIdx");
-    let newValue = turn == 'O' ? 2 : 1;
-    grid[colIdx][rowIdx] = newValue;
-    handleSeriesofEvents(rowIdx, colIdx);    // handle series of events once action is dispatched.
+  const rowIdx = parseInt(this.getAttribute("rowIdx"), 10);
+  const colIdx = parseInt(this.getAttribute("colIdx"), 10);
+
+  if (grid[colIdx][rowIdx] !== 0) {
+    return; // Prevent re-clicking
+  }
+
+  const newValue = turn === PLAYER_O ? 2 : 1;
+  grid[colIdx][rowIdx] = newValue;
+  handleSeriesofEvents(rowIdx, colIdx);
 }
 
 /**
- * 
- * @param {int} rowIdx - row index of clicked cell.
- * @param {int} colIdx - columnd index of click cell.
- * @returns - conditional 
+ * Handles the series of events after a player makes a move.
+ * @param {number} rowIdx The row index of the clicked cell.
+ * @param {number} colIdx The column index of the clicked cell.
  */
 function handleSeriesofEvents(rowIdx, colIdx) {
-    // check if the game is tied. set 'game over' to true. 
-    if (checkTie()) {
-        let msg = "It's a tie."
-        gameOver = true
-        renderMainGrid();
-        declareResult(msg)
-    }
-    else {
-        renderMainGrid();
-        addClickHandlers();
-    }
-    // change the player 
-    changePlayer(rowIdx, colIdx);
+  if (checkTie()) {
+    gameOver = true;
+    renderMainGrid();
+    declareResult("It's a tie!");
+    return; // Exit early if it's a tie
+  }
+
+  renderMainGrid();
+  addClickHandlers();
+  changePlayer();
 }
 
 /**
- * @description - check tie condition by looking for values in each cells.
+ * Checks if the game is tied.
+ * @returns {boolean} True if the game is tied, false otherwise.
  */
 function checkTie() {
-    // need to check if all the cell values are > 0
-    let count = 0
-    for (let i = 0; i < grid.length; i++) {
-        for (let j = 0; j < grid[i].length; j++) {
-            if (grid[i][j] == 0) {
-                count += 1
-            }
-        }
+  for (let i = 0; i < GRID_LENGTH; i++) {
+    for (let j = 0; j < GRID_LENGTH; j++) {
+      if (grid[i][j] === 0) {
+        return false; // If any cell is empty, it's not a tie
+      }
     }
-    return count > 0 ? false : true
+  }
+  return true;
 }
 
 
-
 /**
- * check if all the elements in an object have value true.
- * @param {Object} obj 
+ * Checks if the current player has won the game.
+ * @param {string} player The current player ('X' or 'O').
+ * @returns {boolean} True if the player has won, false otherwise.
  */
-function allValuesTrue(obj) {
-    for (let el in obj)
-        if (!obj[el]) return false;
-    return true;
-}
+function checkWinner(player) {
+  const playerValue = player === PLAYER_X ? 1 : 2;
 
-/**
- * function to check the winning condition irrespective of grid length.
- * @param {string} turn 
- * @param {int} GRID_LENGTH 
- */
-function checkWinner(GRID_LENGTH, turn) {
-    let result = false
-    let arr = WinningComb // fetch winningcombination based on grid_length
-    let obj = {}
-    for (let i = 0; i < arr.length; i++) {
-        for (let j = 0; j < arr[0].length; j++) {
-            let key = [i] + "_" + [j]
-            obj[key] = getCellValue(arr[i][j]) === turn
-        }
-        if (allValuesTrue(obj)) {
-            result = true
-            return result
-        } else {
-            obj = {}
-        }
+  for (const combination of winningCombinations) {
+    if (
+      combination.every((cellIndex) => {
+        const row = Math.floor((cellIndex - 1) / GRID_LENGTH);
+        const col = (cellIndex - 1) % GRID_LENGTH;
+        return grid[row][col] === playerValue;
+      })
+    ) {
+      return true;
     }
-    return result
-}
+  }
 
-// get cell value in matrix by unique id.
-function getCellValue(id) {
-    return document.getElementById(id).innerText
+  return false;
 }
 
 /**
- * @param {string} msg - message to be displayed after the "gameover". 
+ * Displays the game result in the result modal.
+ * @param {string} message The message to display.
  */
-function declareResult(msg) {
-    let gameOverMsg = document.getElementById("resultModal")
-    gameOverMsg.innerHTML = "<h1 class='displayText'>" + msg + "</h1>"
+function declareResult(message) {
+  resultModal.innerHTML = `<h1 class='displayText'>${message}</h1>`;
 }
 
 /**
- * @description add click handler to cell if unmarked, spare otherwise. 
+ * Adds click handlers to all empty cells in the grid.
  */
 function addClickHandlers() {
-    var boxes = document.getElementsByClassName("box");
-    // add click handlers to only unselected boxes.
-    for (var idx = 0; idx < boxes.length; idx++) {
-        if (!boxes[idx].innerText) {
-            boxes[idx].addEventListener('click', onBoxClick, false);
-        }
+  const boxes = document.getElementsByClassName("box");
+  for (let i = 0; i < boxes.length; i++) {
+    if (!boxes[i].innerText) {
+      boxes[i].addEventListener("click", onBoxClick, false);
     }
+  }
 }
 
 /**
- * @description - re-renders the board empty when called.
- * call 'initializeGrid' - method to render 2d array.
- * followed by 'renderMainGrid' - method to render the content filled and styled matrix in HTML.
- * call 'addClickHandler' to add click handler to each cell if it's not checked already. 
+ * Resets the game board to its initial state.
  */
 function renderBoard() {
-    grid = []
-    initializeGrid();
-    renderMainGrid();
-    addClickHandlers();
-    document.getElementById("changePlayerText").innerHTML = ''
-    document.getElementById("resultModal").innerHTML = ''
+  initializeGrid();
+  renderMainGrid();
+  addClickHandlers();
+  changePlayerText.innerHTML = "";
+  resultModal.innerHTML = "";
+  gameOver = false; // Reset game state
+  turn = PLAYER_X; // Reset to Player X's turn
 }
 
-// call it for the first time when HTML loads.
-renderBoard()
-generateIndexes()
-
-// Could do nicer with UI.
+/**
+ * Starts a new game, prompting for player names.
+ */
 function startGame() {
-    confirm("You will be redirect to game. Player 1 is 'X' and Player 2 id 'O'")
-    player1 = prompt("What's Player 1 Name ?") || 'X'
-    player2 = prompt("What's Player 2 Name ?") || 'O'
+  const confirmNewGame = confirm(
+    "You will be redirected to the game. Player 1 is 'X' and Player 2 is 'O'"
+  );
 
+  if (confirmNewGame) {
+    player1Name = prompt("What's Player 1's Name?") || "Player 1";
+    player2Name = prompt("What's Player 2's Name?") || "Player 2";
+  }
 }
 
-startGame()
+// Initial setup
+generateIndexes();
+renderBoard();
+startGame();
